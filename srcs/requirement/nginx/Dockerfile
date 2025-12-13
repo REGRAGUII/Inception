@@ -6,7 +6,7 @@ RUN apt update -y && \
     openssl req -x509 -nodes -newkey rsa:2048 \
     -keyout /etc/nginx/ssl/inception.key \
     -out /etc/nginx/ssl/inception.crt \
-    -subj "/C=FR/ST=BG/L=1337/O=42/OU=42/CN=yregragu.42.ma/UID=yregragu"
+    -subj "/C=MA/ST=BG/L=1337/O=42/OU=42/CN=yregragu.42.ma/UID=yregragu"
 
 COPY config/nginx.conf /etc/nginx/nginx.conf
 
