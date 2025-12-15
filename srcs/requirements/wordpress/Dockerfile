@@ -1,21 +1,43 @@
 FROM debian:bullseye
 
-RUN     apt update -y  && apt install -y wget php php-fpm php-mysql mariadb-client
+# Install required packages
+RUN apt update -y && apt install -y \
+    wget \
+    php \
+    php-fpm \
+    php-mysql \
+    mariadb-client \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN     wget https://wordpress.org/wordpress-6.8.1.tar.gz -P /var/www
-
+# Download and extract WordPress
+# RUN wget https://wordpress.org/wordpress-6.8.1.tar.gz -P /var/www \
+    # && cd /var/www \
+    # && tar -xzf wordpress-6.8.1.tar.gz \
+    # && rm wordpress-6.8.1.tar.gz
+RUN		apt update -y && apt install -y wget php php-fpm php-mysql mariadb-client
+RUN		wget https://wordpress.org/wordpress-6.8.1.tar.gz -P /var/www
 RUN 	cd /var/www && tar -xzf wordpress-6.8.1.tar.gz && rm wordpress-6.8.1.tar.gz
 
-RUN		chmod -R 755 /var/www/wordpress
+# Set correct permissions
+RUN chmod -R 755 /var/www/wordpress
 
-COPY 	conf/www.conf /etc/php/7.4/fpm/pool.d/www.conf
+# Copy PHP-FPM config
+COPY conf/www.conf /etc/php/7.4/fpm/pool.d/www.conf
 
-RUN		wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+# Install WP-CLI
+RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod 755 wp-cli.phar \
+    && mv wp-cli.phar /usr/local/bin/wp
 
-RUN		chmod 755 wp-cli.phar
+# Copy WordPress setup script
+COPY tools/wpconfig.sh /
+RUN chmod +x /wpconfig.sh
 
-RUN		mv wp-cli.phar /usr/local/bin/wp
+# Set working directory
+# WORKDIR /var/www/wordpress
 
-COPY 	tools/wpconfig.sh /
+EXPOSE 9000
 
-CMD		["bash", "wpconfig.sh"]
+# Run WordPress init + PHP-FPM
+CMD ["/wpconfig.sh"]
